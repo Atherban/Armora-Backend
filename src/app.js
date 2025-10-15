@@ -5,6 +5,7 @@ import cors from "cors";
 import authRoutes from "./routes/auth.route.js";
 import scanRoute from "./routes/scan.route.js";
 import wifiRoute from "./routes/wifi.route.js";
+import securityRoutes from "./routes/security.route.js";
 
 const app = express();
 
@@ -19,5 +20,8 @@ app.use("/api/scan", scanRoute);
 
 //Wifi Scan Route
 app.use("/api/wifi-scan", wifiRoute);
+
+//System Security Analysis Route
+app.use("/api/security", securityRoutes);
 
 export default app;
