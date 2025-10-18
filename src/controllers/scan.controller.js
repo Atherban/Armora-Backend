@@ -167,7 +167,6 @@ export const scanUrl = async (req, res) => {
 
     cache.set(normalized, { result, expiresAt: now() + CACHE_TTL_MS });
 
-    ;
     return res.json(result);
   } catch (err) {
     console.error("Scan failed:", err);

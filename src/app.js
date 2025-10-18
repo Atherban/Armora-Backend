@@ -8,6 +8,7 @@ import authRoutes from "./routes/auth.route.js";
 import scanRoute from "./routes/scan.route.js";
 import wifiRoute from "./routes/wifi.route.js";
 import securityRoutes from "./routes/security.route.js";
+import aiRoute from "./routes/ai.route.js";
 
 const app = express();
 
@@ -26,5 +27,8 @@ app.use("/api/wifi-scan", wifiRoute);
 
 //System Security Analysis Route
 app.use("/api/security", securityRoutes);
+
+// AI Route
+app.use("/api/ai", aiRoute);
 
 export default app;
