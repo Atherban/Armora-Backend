@@ -9,6 +9,7 @@ import scanRoute from "./routes/scan.route.js";
 import wifiRoute from "./routes/wifi.route.js";
 import securityRoutes from "./routes/security.route.js";
 import aiRoute from "./routes/ai.route.js";
+import qrRoute from "./routes/qr.route.js";
 
 const app = express();
 
@@ -18,6 +19,9 @@ app.use(express.json());
 
 //Auth Routes
 app.use("/api/auth", authRoutes);
+
+//QR scan Routes
+app.use("/api/qr", qrRoute);
 
 //Scan Route
 app.use("/api/scan", scanRoute);
