@@ -23,7 +23,7 @@ app.use("/api/auth", authRoutes);
 //QR scan Routes
 app.use("/api/qr", qrRoute);
 
-//Scan Route
+//Scan Site Route
 app.use("/api/scan", scanRoute);
 
 //Wifi Scan Route
