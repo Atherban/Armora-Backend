@@ -1,0 +1,110 @@
+PROJECT: Armora - Backend
+
+Overview
+--------
+Armora Backend is a Node.js / Express (ESM) REST API that provides security-related analyses for a mobile client (Armora-Mobile). Main capabilities:
+- URL safety scanning (heuristics + optional Google Safe Browsing)
+- Wi‑Fi network analysis
+- Device/system security analysis
+- AI-powered analysis and chat (Google Generative AI / Gemini)
+- Authentication (register/login) with JWT
+- A lightweight in-process cron job starter (runs at startup)
+
+Primary goals
+-------------
+- Provide actionable security insights to mobile clients
+- Combine deterministic heuristics with generative AI for richer analysis and recommendations
+- Keep user management minimal (signup/login) and focus on analysis features
+
+Repository layout (key files)
+-----------------------------
+- `server.js`                    - app entry that starts Express and calls `connectDB()`
+- `package.json`                 - dependencies and scripts (note: `dev` script uses `npx nodemon server.js`)
+- `src/app.js`                   - registers middleware, rate limiter, routes, and starts the cron job
+- `src/db/db.js`                 - mongoose DB connection (exports `connectDB`)
+- `src/models/user.model.js`     - user schema and password hashing
+- `src/routes/*.js`              - route definitions (auth, scan, wifi, security, ai, qr, breach)
+- `src/controllers/*.js`         - HTTP request handlers and orchestration logic
+- `src/services/*.js`            - AI wrappers and external API integration logic
+- `src/utils/*.js`               - helper utilities (scan heuristics, aiScore, caching, wifi utils)
+
+Tech stack and dependencies
+---------------------------
+(From `package.json`)
+- Node.js (ESM modules)
+- Express 5
+- Mongoose (MongoDB)
+- dotenv
+- cors
+- axios, node-fetch
+- bcrypt, jsonwebtoken
+- cron
+- @google/generative-ai (Gemini client)
+
+Environment variables (required / recommended)
+---------------------------------------------
+- MONGO_URI (required) — MongoDB connection string
+- JWT_SECRET (required) — secret to sign/verify JWT tokens
+- GEMINI_API_KEY (required for AI features)
+- GSB_API_KEY (optional) — Google Safe Browsing API key
+- API_URL (optional) — used by `src/cron.js` to send a periodic GET request
+- PORT (optional) — server listen port (defaults to 3000)
+
+High-level architecture & flow
+------------------------------
+1. `server.js` imports `app` (from `src/app.js`) and calls `app.listen(PORT)`. On start it calls `connectDB()` to connect to MongoDB.
+2. `src/app.js` starts the `cron` job (in-process), configures middleware (CORS, express.json, rate limiter) and mounts routes:
+   - `/api/auth` -> authentication
+   - `/api/scan` -> url/site scanning
+   - `/api/wifi-scan` -> wifi analysis
+   - `/api/security` -> system/device security analysis
+   - `/api/ai` -> AI analysis/chat
+   - `/api/qr` -> QR related endpoints
+   - `/api/breach` -> breach-related endpoints
+3. Routes call controllers which orchestrate services and utils.
+4. Services call external integrations (Gemini, Google SB) and utils (scan heuristics, caching) to produce responses.
+
+API endpoints (summary)
+-----------------------
+Authentication
+- POST `/api/auth/register` — Body: { username, email, password } — returns created user + token
+- POST `/api/auth/login` — Body: { email, password } — returns user + token
+
+URL scan
+- POST `/api/scan` — Body: { url } — normalization, DNS checks, HTTPS checks, heuristics, optional Google SB. Returns structured scan result (url, status, threatLevel, confidence, checks, severity).
+
+Wi‑Fi analysis
+- POST `/api/wifi-scan` — Body: { ssid, ipAddress, isConnected, type, deviceInfo } — returns network analysis and recommendations.
+
+Device/System security
+- POST `/api/security/analyze` — Body: { platform, osVersion, model, isEmulator, developerMode, usbDebugging, vpnActive, ... } — returns score and checks.
+
+AI analysis & chat
+- GET `/api/ai` — collects systemData, computes baseScore and enriches with Gemini responses.
+- POST `/api/ai/chat` — Body: { analysisData, message } — returns AI chat reply grounded in provided analysis.
+
+Data models (brief)
+-------------------
+User model includes username, email (unique), password (bcrypt hashed), profileImage, timestamps. Password hashing and compare methods are implemented in `src/models/user.model.js`.
+
+Utilities and heuristics
+------------------------
+- `src/utils/scan.util.js` — URL/domain parsing, TLD heuristics, in-memory cache (Map with TTL), DNS helpers.
+- `src/utils/aiScore.js` — compute base heuristic scores.
+- `src/utils/aiSystemAnalysis.js` — gathers system diagnostics used as AI input.
+
+Security considerations
+-----------------------
+- Keep JWT_SECRET, GEMINI_API_KEY and GSB_API_KEY out of version control and use a secrets manager in production.
+- The in-memory cache is process-local; use Redis for multi-instance deployments.
+- Sanitize AI inputs and limit sizes to prevent prompt injection and excessive costs.
+- Rate limiting is enabled via `express-rate-limit` (configured in `src/app.js`) but verify limits in production.
+
+Appendix: Where to look in the code
+----------------------------------
+- `server.js` — bootstrapping and DB connect call
+- `src/app.js` — middleware, rate limiter, route mounting, job.start()
+- `src/db/db.js` — `connectDB()` implementation
+- `src/controllers/*` and `src/routes/*` — concrete request/response shapes
+- `src/services/*` — AI integration and orchestration
+- `src/utils/*` — heuristics and helpers
