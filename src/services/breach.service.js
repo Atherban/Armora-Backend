@@ -3,10 +3,8 @@ import axios from "axios";
 // Constants and Configuration
 const CONFIG = {
   RAPIDAPI_KEY: process.env.BREACH_API_KEY,
-  RAPIDAPI_HOST: process.env.RAPIDAPI_HOST || "breachdirectory.p.rapidapi.com",
-  BREACH_API_URL: `https://${
-    process.env.RAPIDAPI_HOST || "breachdirectory.p.rapidapi.com"
-  }/`,
+  RAPIDAPI_HOST: "breachdirectory.p.rapidapi.com",
+  BREACH_API_URL: `https://breachdirectory.p.rapidapi.com/`,
   REQUEST_TIMEOUT: 10000, // 10 seconds
 };
 
@@ -72,7 +70,7 @@ class BreachApiClient {
   constructor() {
     this.baseURL = CONFIG.BREACH_API_URL;
     this.headers = {
-      "x-rapidapi-key": CONFIG.RAPIDAPI_KEY || "",
+      "x-rapidapi-key": CONFIG.RAPIDAPI_KEY || process.env.RAPIDAPI_KEY,
       "x-rapidapi-host": CONFIG.RAPIDAPI_HOST,
     };
   }
